@@ -9,7 +9,7 @@ pipeline {
     stage('Checkout') {
       steps {
         sh 'echo passed'
-        //git branch: 'main', url: 'https://github.com/saitheja009/Jenkins-Zero-To-Hero.git'
+        git branch: 'main', url: 'https://github.com/saitheja009/Jenkins-Zero-To-Hero.git'
       }
     }
     stage('Build and Test') {
@@ -22,7 +22,7 @@ pipeline {
     
     stage('Build and Push Docker Image') {
       environment {
-        DOCKER_IMAGE = "saitheja009/my_project:tagname:${BUILD_NUMBER}"
+        DOCKER_IMAGE = "saitheja009/my_project:${BUILD_NUMBER}"
         // DOCKERFILE_LOCATION = "java-maven-sonar-argocd-helm-k8s/spring-boot-app/Dockerfile"
         REGISTRY_CREDENTIALS = credentials('docker-hub-credential-id')
       }
@@ -30,7 +30,7 @@ pipeline {
         script {
             sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && docker build -t ${DOCKER_IMAGE} .'
             def dockerImage = docker.image("${DOCKER_IMAGE}")
-            docker.withRegistry('https://index.docker.io/v1/', "docker-cred") {
+            docker.withRegistry('https://index.docker.io/v1/', "docker-hub-credential-id") {
                 dockerImage.push()
             }
         }
@@ -39,13 +39,13 @@ pipeline {
     stage('Update Deployment File') {
         environment {
             GIT_REPO_NAME = "Jenkins-Zero-To-Hero"
-            GIT_USER_NAME = "saitheja009"
+            GIT_USER_NAME = "Saitheja009"
         }
         steps {
             withCredentials([string(credentialsId: 'GitHubAppToken', variable: 'GITHUB_TOKEN')]) {
                 sh '''
-                    git config user.email "abhishek.xyz@gmail.com"
-                    git config user.name "Abhishek Veeramalla"
+                    git config user.email "saithejabojja04@gmail.com"
+                    git config user.name "Saitheja009"
                     BUILD_NUMBER=${BUILD_NUMBER}
                     sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
                     git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
